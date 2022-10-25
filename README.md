@@ -1,7 +1,8 @@
 # Video face detection
 
 ## Requirenments
-- OpenCV, python-opencv
+- Python3
+- OpenCV >= 4.5.4, python-opencv
 - [optional] tqdm
 
 ## How to use
