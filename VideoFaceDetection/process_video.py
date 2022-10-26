@@ -1,7 +1,7 @@
 import cv2
 from tqdm import tqdm
 import datetime
-
+import importlib.resources
 
 def process_video(video_file, output_video, output_text, output_codec):
     vid = cv2.VideoCapture(video_file)
@@ -15,7 +15,7 @@ def process_video(video_file, output_video, output_text, output_codec):
     out_v = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
     detector = cv2.FaceDetectorYN.create(
-        'face_detection_yunet_2022mar.onnx',
+        str(importlib.resources.path('VideoFaceDetection', 'face_detection_yunet_2022mar.onnx')),
         "",
         (width, height)
     )
