@@ -3,7 +3,7 @@
 
 ## Requirenments
 - Python3
-- OpenCV >= 4.5.4, python-opencv
+- OpenCV >= 4.5.4, opencv-python
 - [optional] tqdm
 - [optional] [face-recognition](https://github.com/ageitgey/face_recognition#installation) if you want to use ```--backend=FaceRecognition```
 
