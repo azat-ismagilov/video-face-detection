@@ -34,3 +34,5 @@ options:
 
 ## Info
 Also, check out my similar project, automated face recognition system with badge detection for ICPC world finals: https://github.com/azat-ismagilov/icpc-faces
+
+TG: https://t.me/ismagilovcode
