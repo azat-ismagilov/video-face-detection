@@ -109,7 +109,7 @@ def process_video(video_file, output_video, output_text, output_codec, confidenc
 
     try:
         from tqdm import tqdm
-    except ImportError:
+    except:
         def tqdm(iterator, *args, **kwargs):
             return iterator
 
