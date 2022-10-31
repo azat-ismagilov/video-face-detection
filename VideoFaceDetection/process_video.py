@@ -1,9 +1,50 @@
+from dataclasses import dataclass
+from typing import List
 import cv2
 from tqdm import tqdm
 import datetime
 import importlib.resources
 
-def process_video(video_file, output_video, output_text, output_codec):
+
+@dataclass
+class Face:
+    top: int
+    left: int
+    right: int
+    bottom: int
+    confidence: float
+
+    def __iter__(self):
+        return iter((self.top, self.left, self.right, self.bottom, self.confidence))
+
+
+class FaceDetectorYN:
+    def __init__(self, width, height):
+        self.detector = cv2.FaceDetectorYN.create(
+            str(importlib.resources.path('VideoFaceDetection',
+                'face_detection_yunet_2022mar.onnx')),
+            "",
+            (width, height)
+        )
+
+    def detect(self, frame) -> List[Face]:
+        result = []
+
+        faces = self.detector.detect(frame)
+        if faces[1] is not None:
+            for face in faces[1]:
+                top = int(face[0])
+                left = int(face[1])
+                bottom = top + int(face[2])
+                right = left + int(face[3])
+                conf = face[-1]
+
+                result.append(Face(top, left, right, bottom, conf))
+
+        return result
+
+
+def process_video(video_file, output_video, output_text, output_codec, confidence_threshold):
     vid = cv2.VideoCapture(video_file)
 
     width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -14,11 +55,7 @@ def process_video(video_file, output_video, output_text, output_codec):
     fourcc = cv2.VideoWriter_fourcc(*output_codec)
     out_v = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
-    detector = cv2.FaceDetectorYN.create(
-        str(importlib.resources.path('VideoFaceDetection', 'face_detection_yunet_2022mar.onnx')),
-        "",
-        (width, height)
-    )
+    detector = FaceDetectorYN(width, height)
 
     faces_info = []
 
@@ -37,22 +74,15 @@ def process_video(video_file, output_video, output_text, output_codec):
             break
 
         faces = detector.detect(frame)
-        if faces[1] is not None:
-            for face in faces[1]:
-                top = int(face[0])
-                left = int(face[1])
-                bottom = top + int(face[2])
-                right = left + int(face[3])
-                conf = int(face[-1])
+        for (top, left, right, bottom, confidence) in faces:
+            if confidence < confidence_threshold:
+                continue
 
-                cv2.rectangle(frame,
-                              (top, left), (bottom, right),
-                              (0, 255, 0), 10)
-                cv2.putText(frame,
-                            str(conf), (top - 30, left),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0))
+            cv2.rectangle(frame,
+                          (top, left), (bottom, right),
+                          (0, 255, 0), 10)
 
-                faces_info.append((current_frame, top, left, right, bottom))
+            faces_info.append((current_frame, top, left, right, bottom))
 
         out_v.write(frame)
 
