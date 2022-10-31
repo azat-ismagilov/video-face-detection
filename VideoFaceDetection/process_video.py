@@ -44,7 +44,50 @@ class FaceDetectorYN:
         return result
 
 
-def process_video(video_file, output_video, output_text, output_codec, confidence_threshold):
+class CascadeFaceClassifier:
+    def __init__(self):
+        self.detector = cv2.CascadeClassifier(
+            str(importlib.resources.path('VideoFaceDetection',
+                'haarcascade_frontalface_default.xml'))
+        )
+
+    def detect(self, frame) -> List[Face]:
+        result = []
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        faces = self.detector.detectMultiScale(
+            gray,
+            scaleFactor=1.2,
+            minNeighbors=5,
+            minSize=(20, 20)
+        )
+        for (x, y, w, h) in faces:
+            top = x
+            left = y
+            bottom = top + w
+            right = left + h
+
+            result.append(Face(top, left, right, bottom, 1))
+
+        return result
+
+
+class FaceRecognition:
+    def detect(self, frame) -> List[Face]:
+        import face_recognition
+
+        rgb_frame = frame[:, :, ::-1]
+        result = []
+
+        faces = face_recognition.face_locations(rgb_frame)
+        for top, right, bottom, left in faces:
+            result.append(Face(top, left, right, bottom, 1))
+
+        return result
+
+
+def process_video(video_file, output_video, output_text, output_codec, confidence_threshold, backend):
     vid = cv2.VideoCapture(video_file)
 
     width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -55,7 +98,12 @@ def process_video(video_file, output_video, output_text, output_codec, confidenc
     fourcc = cv2.VideoWriter_fourcc(*output_codec)
     out_v = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
-    detector = FaceDetectorYN(width, height)
+    if backend == 'FaceRecognition':
+        detector = FaceRecognition()
+    elif backend == 'Cascade':
+        detector = CascadeFaceClassifier()
+    else:
+        detector = FaceDetectorYN(width, height)
 
     faces_info = []
 
