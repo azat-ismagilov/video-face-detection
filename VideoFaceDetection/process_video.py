@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import List
+import os
 import cv2
 from tqdm import tqdm
 import datetime
-import importlib.resources
 
 
 @dataclass
@@ -21,8 +21,8 @@ class Face:
 class FaceDetectorYN:
     def __init__(self, width, height):
         self.detector = cv2.FaceDetectorYN.create(
-            str(importlib.resources.path('VideoFaceDetection',
-                'face_detection_yunet_2022mar.onnx')),
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'face_detection_yunet_2022mar.onnx'),
             "",
             (width, height)
         )
@@ -47,8 +47,8 @@ class FaceDetectorYN:
 class CascadeFaceClassifier:
     def __init__(self):
         self.detector = cv2.CascadeClassifier(
-            str(importlib.resources.path('VideoFaceDetection',
-                'haarcascade_frontalface_default.xml'))
+            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'haarcascade_frontalface_default.xml')
         )
 
     def detect(self, frame) -> List[Face]:
