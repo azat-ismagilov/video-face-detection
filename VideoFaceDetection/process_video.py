@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List
 import os
 import cv2
-from tqdm import tqdm
 import datetime
 
 
